@@ -19,6 +19,7 @@ name String @default("Не указано")
 picture String @default("/uploads/no-user-image.png")
 store  Store[]
 reviews Review[]
+orders Order[]
 @@map("user")
 
  }
@@ -100,9 +101,39 @@ userId String @map("user_id")
 product Product @relation(fields: [productId], references: [id])
 productId String @map("product_id")
 store Store @relation(fields: [storeId], references: [id])
-storeId String @map("store_id ")
+storeId String @map("store_id")
 
 @@map("review")
 
 }
 
+
+
+
+model Order{
+id String  @id @default(cuid())
+createdAt DateTime @default(now()) @map("created_at")
+updatedAt DateTime @updatedAt @map("updated_at")
+status EnumOrderStatus @default(PENDING)
+
+items OrderItem[]
+total Int
+user User @relation(fields: [userId], references: [id])
+userId String @map("user_id")
+@@map("order")
+
+}
+model OrderItem{
+id String @id @default(cuid())
+createdAt DateTime @default(now()) @map("created_at")
+updatedAt DateTime @updatedAt @map("updatedAt")
+orders Order @relation(fields: [orderId], references: [id])
+orderId String @map("order_id")
+price Int
+quntity Int
+@@map("order_item")
+}
+enum EnumOrderStatus {
+  PENDING 
+  SUCCESFULL
+}
