@@ -29,6 +29,7 @@ model Store{
   description String
   products  Product[]
   categories Category[]
+  colors Color[]
   user User @relation(fields: [userId], references: [id])
   userId String @map("user_id")
   @@map("store")
@@ -43,10 +44,13 @@ model Product {
   description String
   price Int
   images String[]
+  color Color? @relation((fields: [colorId], references: [id]))
+  colorId String  @map("color_id")
   store Store? @relation(fields: [storeId], references: [id]) 
   storeId  String? @map("store_id")
   category Category? @relation(fields: [categoryId], references: [id]) 
   categoryId  String? @map("category_id")
+  
   @@map("product")
 }
 
@@ -62,6 +66,22 @@ products Product[]
 store Store? @relation(fields: [storeId], references: [id]) 
   storeId  String? @map("store_id")
 
-@@map("category")
+
+@@map("category") 
 
 } 
+
+
+model Color{
+  id String @id @default(cuid())
+  createdAt DateTime @default(now())@map("created_at")
+updatedAt DateTime @default(now()) @map("updated_at")
+ store Store? @relation(fields: [storeId], references: [id])
+ storeId String? @map("store_id")
+products Product[]
+ name String
+ value String
+ 
+}
+
+
