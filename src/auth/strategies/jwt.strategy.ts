@@ -6,6 +6,9 @@ import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
+  sign() {
+    throw new Error('Method not implemented.');
+  }
   constructor(
     private configService: ConfigService,
     private userService: UserService,
