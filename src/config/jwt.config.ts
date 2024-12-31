@@ -1,7 +1,9 @@
 import { ConfigService } from '@nestjs/config';
 import { JwtModuleOptions } from '@nestjs/jwt';
 export const getJwtConfig = async (
-  ConfigService: ConfigService,
+  configService: ConfigService,
 ): Promise<JwtModuleOptions> => ({
-  secret: ConfigService.get('JWT_SERVICE'),
+  secret: configService.get('JWT_SECRET'),
 });
+
+//? error was jwt service to jwt secret

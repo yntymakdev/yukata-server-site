@@ -10,6 +10,7 @@ import { AuthDto } from './dto/auth.dto';
 
 @Injectable()
 export class AuthService {
+  [x: string]: any;
   constructor(
     private jwtService: JwtService,
     private userService: UserService,
@@ -33,8 +34,8 @@ export class AuthService {
   issueTokens(userId: string) {
     const data = { id: userId };
 
-    const accessToken = this.jwtService.sign(data, { expiresIn: '1h' });
-    const refreshToken = this.jwtService.sign(data, { expiresIn: '1h' });
+    const accessToken = this.jwt.sign(data, { expiresIn: '1h' });
+    const refreshToken = this.jwt.sign(data, { expiresIn: '7d' });
 
     return {
       accessToken,
