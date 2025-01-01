@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from 'src/user/user.service';
@@ -26,6 +27,14 @@ export class AuthService {
     const oldUser = await this.userService.getByEmail(dto.email);
     if (oldUser) throw new BadRequestException('Пользователь уже существует');
     const user = await this.userService.create(dto);
+    const tokens = this.issueTokens(user.id);
+    return { user, ...tokens };
+  }
+
+  async getNewTokens(refreshToken: string) {
+    const result = await this.jwt.verifyAsync(refreshToken);
+    if (!result) throw new UnauthorizedException('Невалидный refresh токен');
+    const user = await this.userService.getById(result.id);
     const tokens = this.issueTokens(user.id);
     return { user, ...tokens };
   }
