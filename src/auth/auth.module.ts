@@ -9,7 +9,7 @@ import { PrismaService } from 'src/prisma.service';
 import { UserService } from 'src/user/user.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
-import { InstagramStrategy } from './strategies/instagram.strategy';
+import { YandexStrategy } from './strategies/instagram.strategy';
 
 @Module({
   imports: [
@@ -28,7 +28,7 @@ import { InstagramStrategy } from './strategies/instagram.strategy';
     UserService,
     JwtStrategy,
     GoogleStrategy,
-    InstagramStrategy,
+    YandexStrategy,
   ],
 })
 export class AuthModule {}
