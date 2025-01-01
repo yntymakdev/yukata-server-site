@@ -8,13 +8,17 @@ import { JwtService } from '@nestjs/jwt';
 import { UserService } from 'src/user/user.service';
 import { PrismaService } from 'src/prisma.service';
 import { AuthDto } from './dto/auth.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
+  EXPIRE_DAY_REFRESH_TOKEN = 1;
+  REFRESH_TOKENS_NAME = 'refreshtoken';
   constructor(
     private jwt: JwtService,
     private userService: UserService,
     private prisma: PrismaService,
+    private configService: ConfigService,
   ) {}
 
   async login(dto: AuthDto) {
@@ -54,5 +58,16 @@ export class AuthService {
     const user = await this.userService.getByEmail(dto.email);
     if (!user) throw new NotFoundException('Пользователь не найден');
     return user;
+  }
+  addRefreshTokenResponse(res: Response, refreshtoken: string) {
+    const expiresIn = new Date();
+    expiresIn.setDate(expiresIn.getDate() + this.EXPIRE_DAY_REFRESH_TOKEN);
+    res.cookie(this.REFRESH_TOKENS_NAME, '', {
+      httpOnly: true,
+      domain: this.configService.get('SERVER_DOMAIN'),
+      expires: new Date(0),
+      secure: true,
+      sameSite: 'none',
+    });
   }
 }
