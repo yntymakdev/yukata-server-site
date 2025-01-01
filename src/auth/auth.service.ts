@@ -10,9 +10,8 @@ import { AuthDto } from './dto/auth.dto';
 
 @Injectable()
 export class AuthService {
-  [x: string]: any;
   constructor(
-    private jwtService: JwtService,
+    private jwt: JwtService,
     private userService: UserService,
     private prisma: PrismaService,
   ) {}
