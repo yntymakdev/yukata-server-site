@@ -9,6 +9,7 @@ import { UserService } from 'src/user/user.service';
 import { PrismaService } from 'src/prisma.service';
 import { AuthDto } from './dto/auth.dto';
 import { ConfigService } from '@nestjs/config';
+import { Response } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -59,15 +60,17 @@ export class AuthService {
     if (!user) throw new NotFoundException('Пользователь не найден');
     return user;
   }
-  addRefreshTokenResponse(res: Response, refreshtoken: string) {
+  addRefreshTokenFromResponse(res: Response, refreshtoken: string) {
     const expiresIn = new Date();
     expiresIn.setDate(expiresIn.getDate() + this.EXPIRE_DAY_REFRESH_TOKEN);
-    res.cookie(this.REFRESH_TOKENS_NAME, '', {
+    res.cookie(this.REFRESH_TOKENS_NAME, refreshtoken, {
       httpOnly: true,
       domain: this.configService.get('SERVER_DOMAIN'),
-      expires: new Date(0),
+      expires: expiresIn,
       secure: true,
       sameSite: 'none',
     });
   }
+
+  removeRefresh;
 }
