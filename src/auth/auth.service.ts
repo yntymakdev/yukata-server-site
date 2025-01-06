@@ -10,6 +10,7 @@ import { PrismaService } from 'src/prisma.service';
 import { AuthDto } from './dto/auth.dto';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
+import { IsEmail } from 'class-validator';
 
 @Injectable()
 export class AuthService {
@@ -60,6 +61,34 @@ export class AuthService {
     if (!user) throw new NotFoundException('Пользователь не найден');
     return user;
   }
+  async validateOAuthLogin(req: any): Promise<any> {
+    try {
+      let user = await this.userService.getByEmail(req.user.email);
+      
+      if (!user) {
+        user = await this.prisma.user.create({
+          data: {
+            email: req.user.email,
+            name: req.user.name,
+            picture: req.user.picture,
+          },
+          include: {
+            store: true,
+            favorites: true,
+            orders: true,
+          }
+        });
+      }
+      
+      const tokens  = this.issueTokens(user.id)
+      return {user ,...tokens}
+    } 
+  }
+  
+}
+
+  //?
+
   addRefreshTokenFromResponse(res: Response, refreshtoken: string) {
     const expiresIn = new Date();
     expiresIn.setDate(expiresIn.getDate() + this.EXPIRE_DAY_REFRESH_TOKEN);
@@ -75,7 +104,7 @@ export class AuthService {
   removeRefreshTokenFromResponse(res: Response) {
     const expiresIn = new Date();
     expiresIn.setDate(expiresIn.getDate() + this.EXPIRE_DAY_REFRESH_TOKEN);
-    res.cookie(this.REFRESH_TOKENS_NAME, refreshtoken, {
+    res.cookie(this.REFRESH_TOKENS_NAME, '', {
       httpOnly: true,
       domain: this.configService.get('SERVER_DOMAIN'),
       expires: new Date(0),
