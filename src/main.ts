@@ -12,13 +12,11 @@ async function bootstrap() {
     exposedHeaders: 'set-cookie',
   });
 
-  // Вывод списка маршрутов
   const httpAdapter = app.getHttpAdapter();
   const router = httpAdapter.getInstance();
 
   router._router.stack.forEach((middleware) => {
     if (middleware.route) {
-      // Если это маршрут, а не middleware
       const methods = Object.keys(middleware.route.methods)
         .map((method) => method.toUpperCase())
         .join(', ');

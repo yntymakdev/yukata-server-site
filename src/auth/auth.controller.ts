@@ -10,12 +10,11 @@ import {
   UnauthorizedException,
   Get,
   UseGuards,
-  Response,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthDto } from './dto/auth.dto';
-import { Request, Response } from 'express';
 import { AuthGuard } from '@nestjs/passport';
+import { Response, Request } from 'express'; // Импортируем Request и Response из express
 
 @Controller('auth')
 export class AuthController {
@@ -55,9 +54,10 @@ export class AuthController {
   @HttpCode(200)
   @Post('login/access-token')
   async getNewTokens(
-    @Req() req: Request,
+    @Req() req: Request, // Используем Request из express
     @Res({ passthrough: true }) res: Response,
   ) {
+    // Теперь можно использовать req.cookies
     const refreshTokenFromCookies =
       req.cookies[this.authService.REFRESH_TOKENS_NAME];
     if (!refreshTokenFromCookies) {
@@ -88,7 +88,10 @@ export class AuthController {
 
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  async googleAuthCallback(@Req() _req) {
+  async googleAuthCallback(
+    @Req() req,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const { refreshToken, ...response } =
       await this.authService.validateOAuthLogin(req);
     this.authService.addRefreshTokenFromResponse(res, refreshToken);
@@ -100,9 +103,13 @@ export class AuthController {
   @Get('yandex')
   @UseGuards(AuthGuard('yandex'))
   async yandexAuth(@Req() _req) {}
+
   @Get('yandex/callback')
   @UseGuards(AuthGuard('yandex'))
-  async yandexAuthCallback(@Req() _req) {
+  async yandexAuthCallback(
+    @Req() req,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const { refreshToken, ...response } =
       await this.authService.validateOAuthLogin(req);
     this.authService.addRefreshTokenFromResponse(res, refreshToken);
