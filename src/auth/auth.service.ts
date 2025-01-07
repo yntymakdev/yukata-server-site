@@ -13,8 +13,8 @@ import { Response, Request } from 'express';
 
 @Injectable()
 export class AuthService {
-  private readonly EXPIRE_DAY_REFRESH_TOKEN = 1;
-  private readonly REFRESH_TOKENS_NAME = 'refreshtoken';
+  EXPIRE_DAY_REFRESH_TOKEN = 1;
+  REFRESH_TOKENS_NAME = 'refreshtoken';
 
   constructor(
     private readonly jwt: JwtService,
