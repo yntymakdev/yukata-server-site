@@ -14,8 +14,7 @@ import {
 import { AuthService } from './auth.service';
 import { AuthDto } from './dto/auth.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { Response, Request } from 'express'; // Импортируем Request и Response из express
-
+import { Response, Request } from 'express';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -57,7 +56,6 @@ export class AuthController {
     @Req() req: Request, // Используем Request из express
     @Res({ passthrough: true }) res: Response,
   ) {
-    // Теперь можно использовать req.cookies
     const refreshTokenFromCookies =
       req.cookies[this.authService.REFRESH_TOKENS_NAME];
     if (!refreshTokenFromCookies) {
