@@ -7,7 +7,7 @@ async function bootstrap() {
 
   app.use(cookieParser());
   app.enableCors({
-    origin: [process.env.CLIENT_SITE],
+    origin: [process.env.CLIENT_URL],
     credentials: true,
     exposedHeaders: 'set-cookie',
   });

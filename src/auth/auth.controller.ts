@@ -1,20 +1,21 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   Post,
   Req,
   Res,
+  UnauthorizedException,
+  UseGuards,
   UsePipes,
   ValidationPipe,
-  UnauthorizedException,
-  Get,
-  UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { AuthDto } from './dto/auth.dto';
-import { AuthGuard } from '@nestjs/passport';
-import { Response, Request } from 'express';
+
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -23,13 +24,11 @@ export class AuthController {
   @HttpCode(200)
   @Post('login')
   async login(@Body() dto: AuthDto, @Res({ passthrough: true }) res: Response) {
-    try {
-      const { refreshToken, ...response } = await this.authService.login(dto);
-      this.authService.addRefreshTokenFromResponse(res, refreshToken);
-      return response;
-    } catch (error) {
-      throw new UnauthorizedException('Ошибка входа');
-    }
+    const { refreshToken, ...response } = await this.authService.login(dto);
+
+    this.authService.addRefreshTokenFromResponse(res, refreshToken);
+
+    return response;
   }
 
   @UsePipes(new ValidationPipe())
@@ -39,50 +38,47 @@ export class AuthController {
     @Body() dto: AuthDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    try {
-      const { refreshToken, ...response } =
-        await this.authService.register(dto);
-      this.authService.addRefreshTokenFromResponse(res, refreshToken);
-      return response;
-    } catch (error) {
-      throw new UnauthorizedException('Ошибка регистрации');
-    }
+    const { refreshToken, ...response } = await this.authService.register(dto);
+
+    this.authService.addRefreshTokenFromResponse(res, refreshToken);
+
+    return response;
   }
 
   @UsePipes(new ValidationPipe())
   @HttpCode(200)
   @Post('login/access-token')
   async getNewTokens(
-    @Req() req: Request, // Используем Request из express
+    @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
     const refreshTokenFromCookies =
       req.cookies[this.authService.REFRESH_TOKENS_NAME];
+
     if (!refreshTokenFromCookies) {
       this.authService.removeRefreshTokenFromResponse(res);
       throw new UnauthorizedException('Refresh токен не прошел');
     }
-    try {
-      const { refreshToken, ...response } = await this.authService.getNewTokens(
-        refreshTokenFromCookies,
-      );
-      this.authService.addRefreshTokenFromResponse(res, refreshToken);
-      return response;
-    } catch (error) {
-      throw new UnauthorizedException('Ошибка получения новых токенов');
-    }
+
+    const { refreshToken, ...response } = await this.authService.getNewTokens(
+      refreshTokenFromCookies,
+    );
+
+    this.authService.addRefreshTokenFromResponse(res, refreshToken);
+
+    return response;
   }
 
   @HttpCode(200)
   @Post('logout')
-  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+  async logout(@Res({ passthrough: true }) res: Response) {
     this.authService.removeRefreshTokenFromResponse(res);
-    return { success: true };
+    return true;
   }
 
   @Get('google')
   @UseGuards(AuthGuard('google'))
-  async googleAuth(@Req() _req) {}
+  async googleAuth(@Req() req) {}
 
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
@@ -92,7 +88,9 @@ export class AuthController {
   ) {
     const { refreshToken, ...response } =
       await this.authService.validateOAuthLogin(req);
+
     this.authService.addRefreshTokenFromResponse(res, refreshToken);
+
     return res.redirect(
       `${process.env['CLIENT_URL']}/dashboard?accessToken=${response.accessToken}`,
     );
@@ -100,7 +98,7 @@ export class AuthController {
 
   @Get('yandex')
   @UseGuards(AuthGuard('yandex'))
-  async yandexAuth(@Req() _req) {}
+  async yandexAuth(@Req() req) {}
 
   @Get('yandex/callback')
   @UseGuards(AuthGuard('yandex'))
@@ -110,7 +108,9 @@ export class AuthController {
   ) {
     const { refreshToken, ...response } =
       await this.authService.validateOAuthLogin(req);
+
     this.authService.addRefreshTokenFromResponse(res, refreshToken);
+
     return res.redirect(
       `${process.env['CLIENT_URL']}/dashboard?accessToken=${response.accessToken}`,
     );
