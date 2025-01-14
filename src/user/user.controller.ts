@@ -13,8 +13,7 @@ export class UserController {
   }
   @Auth()
   @Patch("profile/favorites/:productId")
-  async toggleFavorites(@CurrentUser("id") userId: string
-@Param("productId") productId : string) {
+  async toggleFavorites(@CurrentUser("id") userId: string, @Param("productId") productId: string) {
     return this.userService.toggleFavorite(productId, userId);
   }
 }
