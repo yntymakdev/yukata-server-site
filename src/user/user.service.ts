@@ -12,7 +12,7 @@ export class UserService {
       where: {
         id,
       },
-      include: { store: true, favorites: true, orders: true },
+      include: { stores: true, favorites: true, orders: true },
     });
     return user;
   }
