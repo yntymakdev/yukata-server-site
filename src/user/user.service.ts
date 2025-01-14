@@ -21,7 +21,7 @@ export class UserService {
       where: {
         email,
       },
-      include: { store: true, favorites: true, orders: true },
+      include: { stores: true, favorites: true, orders: true },
     });
     return user;
   }
