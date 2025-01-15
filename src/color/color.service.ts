@@ -24,15 +24,21 @@ export class ColorService {
     return color;
   }
   async create(storeId: string, dto: ColorDto) {
-    return this.prisma.store.create({
+    return this.prisma.color.create({
       data: { name: dto.name, value: dto.value, storeId },
     });
   }
   async update(id: string, dto: ColorDto) {
     await this.getById(id);
-    return this.prisma.store.update({
-      where: { id: storeId },
-      data: { ...dto, userId },
+    return this.prisma.color.update({
+      where: { id },
+      data: dto,
+    });
+  }
+  async delete(id: string) {
+    await this.getById(id);
+    return this.prisma.color.delete({
+      where: { id },
     });
   }
 }
