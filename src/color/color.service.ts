@@ -21,4 +21,5 @@ export class ColorService {
     if (!color) throw new NotFoundException("Цвет не наден");
     return color;
   }
+  async create() {}
 }
