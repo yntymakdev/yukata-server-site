@@ -25,12 +25,11 @@ export class StoreController {
   @Auth()
   @Put(":id")
   async update(@Param("id") storeId: string, @CurrentUser("id") userId: string, @Body() dto: UpdateStoreDto) {
-    return this.storeService.create(userId, dto);
+    return this.storeService.update(storeId, userId, dto);
   }
   @Auth()
-  @Delete()
-  @Put(":id")
+  @Delete(":id")
   async delete(@Param("id") storeId: string, @CurrentUser("id") userId: string) {
-    return this.storeService.delete(userId, storeId);
+    return this.storeService.delete(storeId, userId);
   }
 }

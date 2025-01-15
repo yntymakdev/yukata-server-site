@@ -82,7 +82,7 @@ export class AuthService {
           picture: req.user.picture,
         },
         include: {
-          store: true,
+          stores: true,
           favorites: true,
           orders: true,
         },
