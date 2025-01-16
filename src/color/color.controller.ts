@@ -24,12 +24,13 @@ export class StoreController {
   @HttpCode(200)
   @Auth()
   @Put(":id")
-  async update(@Param("id") storeId: string, @CurrentUser("id") userId: string, @Body() dto: UpdateStoreDto) {
-    return this.colorService.update(storeId, userId, dto);
+  async update(@Param("id") storeId: string, @Body() dto: ColorDto) {
+    return this.colorService.update(storeId, dto);
   }
+  @HttpCode(200)
   @Auth()
   @Delete(":id")
-  async delete(@Param("id") storeId: string) {
-    return this.colorService.delete(storeId, userId);
+  async delete(@Param("id") id: string) {
+    return this.colorService.delete(id);
   }
 }
