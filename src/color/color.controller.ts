@@ -6,7 +6,7 @@ import { CreateStoreDto } from "src/store/create-dto.store";
 import { ColorDto } from "./dto/dto.color";
 
 @Controller("colors")
-export class StoreController {
+export class ColorController {
   constructor(private readonly colorService: ColorService) {}
   @Auth()
   @Get("by-Id/:Id")

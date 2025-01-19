@@ -1,6 +1,6 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import * as cookieParser from 'cookie-parser';
+import { NestFactory } from "@nestjs/core";
+import { AppModule } from "./app.module";
+import * as cookieParser from "cookie-parser";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -9,7 +9,7 @@ async function bootstrap() {
   app.enableCors({
     origin: [process.env.CLIENT_URL],
     credentials: true,
-    exposedHeaders: 'set-cookie',
+    exposedHeaders: "set-cookie",
   });
 
   const httpAdapter = app.getHttpAdapter();
@@ -19,7 +19,7 @@ async function bootstrap() {
     if (middleware.route) {
       const methods = Object.keys(middleware.route.methods)
         .map((method) => method.toUpperCase())
-        .join(', ');
+        .join(", ");
       console.log(`${methods} ${middleware.route.path}`);
     }
   });
