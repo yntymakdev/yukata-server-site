@@ -3,7 +3,7 @@ import { Injectable } from "@nestjs/common";
 import { EnumOrderStatus } from "@prisma/client";
 import { PrismaService } from "src/prisma.service";
 import { OrderDto } from "./dto/order.dto";
-import { PaymentStatusDto } from "./dto/payment-status.dto";
+import { PaymentStatusDto } from "./dto/payment-dto";
 
 const checkout = new YooCheckout({
   shopId: process.env["YOOKASSA_SHOP_ID"],
