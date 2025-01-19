@@ -19,4 +19,20 @@ export class ProductService {
     });
     return product;
   }
+  private getSearchTermFilter(searchTerm: string) {
+    return {
+      OR: [
+        {
+          title: {
+            contains: searchTerm,
+            mode: "intensive",
+          },
+          description: {
+            contains: searchTerm,
+            mode: "intensive",
+          },
+        },
+      ],
+    };
+  }
 }
