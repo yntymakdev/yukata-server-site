@@ -1,121 +1,115 @@
 import {
-	Body,
-	Controller,
-	Get,
-	HttpCode,
-	Post,
-	Req,
-	Res,
-	UnauthorizedException,
-	UseGuards,
-	UsePipes,
-	ValidationPipe
-} from '@nestjs/common'
-import { AuthGuard } from '@nestjs/passport'
-import { Request, Response } from 'express'
-import { AuthService } from './auth.service'
-import { AuthDto } from './dto/auth.dto'
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Post,
+  Req,
+  Res,
+  UnauthorizedException,
+  UseGuards,
+  UsePipes,
+  ValidationPipe,
+} from "@nestjs/common";
+import { AuthGuard } from "@nestjs/passport";
+import { Request, Response } from "express";
+import { AuthService } from "./auth.service";
+import { AuthDto } from "./dto/auth.dto";
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
-@Controller('auth')
+@ApiTags("Auth")
+@Controller("auth")
 export class AuthController {
-	constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) {}
 
-	@UsePipes(new ValidationPipe())
-	@HttpCode(200)
-	@Post('login')
-	async login(
-		@Body() dto: AuthDto,
-		@Res({ passthrough: true }) res: Response
-	) {
-		const { refreshToken, ...response } = await this.authService.login(dto)
+  @UsePipes(new ValidationPipe())
+  @HttpCode(200)
+  @Post("login")
+  @ApiOperation({ summary: "Вход пользователя" })
+  @ApiBody({ type: AuthDto })
+  @ApiResponse({ status: 200, description: "Успешный вход" })
+  @ApiResponse({ status: 400, description: "Ошибка валидации" })
+  async login(@Body() dto: AuthDto, @Res({ passthrough: true }) res: Response) {
+    const { refreshToken, ...response } = await this.authService.login(dto);
+    this.authService.addRefreshTokenToResponse(res, refreshToken);
+    return response;
+  }
 
-		this.authService.addRefreshTokenToResponse(res, refreshToken)
+  @UsePipes(new ValidationPipe())
+  @HttpCode(200)
+  @Post("register")
+  @ApiOperation({ summary: "Регистрация пользователя" })
+  @ApiBody({ type: AuthDto })
+  @ApiResponse({ status: 200, description: "Успешная регистрация" })
+  @ApiResponse({ status: 400, description: "Ошибка валидации" })
+  async register(@Body() dto: AuthDto, @Res({ passthrough: true }) res: Response) {
+    const { refreshToken, ...response } = await this.authService.register(dto);
+    this.authService.addRefreshTokenToResponse(res, refreshToken);
+    return response;
+  }
 
-		return response
-	}
+  @UsePipes(new ValidationPipe())
+  @HttpCode(200)
+  @Post("login/access-token")
+  @ApiOperation({ summary: "Получить новый Access токен по Refresh токену" })
+  @ApiResponse({ status: 200, description: "Токены успешно обновлены" })
+  @ApiResponse({ status: 401, description: "Неверный refresh токен" })
+  async getNewTokens(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const refreshTokenFromCookies = req.cookies[this.authService.REFRESH_TOKEN_NAME];
 
-	@UsePipes(new ValidationPipe())
-	@HttpCode(200)
-	@Post('register')
-	async register(
-		@Body() dto: AuthDto,
-		@Res({ passthrough: true }) res: Response
-	) {
-		const { refreshToken, ...response } =
-			await this.authService.register(dto)
+    if (!refreshTokenFromCookies) {
+      this.authService.removeRefreshTokenFromResponse(res);
+      throw new UnauthorizedException("Refresh токен не прошел");
+    }
 
-		this.authService.addRefreshTokenToResponse(res, refreshToken)
+    const { refreshToken, ...response } = await this.authService.getNewTokens(refreshTokenFromCookies);
 
-		return response
-	}
+    this.authService.addRefreshTokenToResponse(res, refreshToken);
+    return response;
+  }
 
-	@UsePipes(new ValidationPipe())
-	@HttpCode(200)
-	@Post('login/access-token')
-	async getNewTokens(
-		@Req() req: Request,
-		@Res({ passthrough: true }) res: Response
-	) {
-		const refreshTokenFromCookies =
-			req.cookies[this.authService.REFRESH_TOKEN_NAME]
+  @HttpCode(200)
+  @Post("logout")
+  @ApiOperation({ summary: "Выход пользователя (удаляет токен)" })
+  @ApiResponse({ status: 200, description: "Успешный выход" })
+  async logout(@Res({ passthrough: true }) res: Response) {
+    this.authService.removeRefreshTokenFromResponse(res);
+    return true;
+  }
 
-		if (!refreshTokenFromCookies) {
-			this.authService.removeRefreshTokenFromResponse(res)
-			throw new UnauthorizedException('Refresh токен не прошел')
-		}
+  @Get("google")
+  @UseGuards(AuthGuard("google"))
+  @ApiOperation({ summary: "Google OAuth Redirect" })
+  @ApiResponse({ status: 200, description: "Редирект на Google OAuth" })
+  async googleAuth(@Req() req) {}
 
-		const { refreshToken, ...response } =
-			await this.authService.getNewTokens(refreshTokenFromCookies)
+  @Get("google/callback")
+  @UseGuards(AuthGuard("google"))
+  @ApiOperation({ summary: "Google OAuth Callback" })
+  @ApiResponse({ status: 302, description: "Редирект после успешного входа" })
+  async googleAuthCallback(@Req() req, @Res({ passthrough: true }) res: Response) {
+    const { refreshToken, ...response } = await this.authService.validateOAuthLogin(req);
 
-		this.authService.addRefreshTokenToResponse(res, refreshToken)
+    this.authService.addRefreshTokenToResponse(res, refreshToken);
 
-		return response
-	}
+    return res.redirect(`${process.env["CLIENT_URL"]}/dashboard?accessToken=${response.accessToken}`);
+  }
 
-	@HttpCode(200)
-	@Post('logout')
-	async logout(@Res({ passthrough: true }) res: Response) {
-		this.authService.removeRefreshTokenFromResponse(res)
-		return true
-	}
+  @Get("yandex")
+  @UseGuards(AuthGuard("yandex"))
+  @ApiOperation({ summary: "Yandex OAuth Redirect" })
+  @ApiResponse({ status: 200, description: "Редирект на Yandex OAuth" })
+  async yandexAuth(@Req() req) {}
 
-	@Get('google')
-	@UseGuards(AuthGuard('google'))
-	async googleAuth(@Req() req) {}
+  @Get("yandex/callback")
+  @UseGuards(AuthGuard("yandex"))
+  @ApiOperation({ summary: "Yandex OAuth Callback" })
+  @ApiResponse({ status: 302, description: "Редирект после успешного входа" })
+  async yandexAuthCallback(@Req() req, @Res({ passthrough: true }) res: Response) {
+    const { refreshToken, ...response } = await this.authService.validateOAuthLogin(req);
 
-	@Get('google/callback')
-	@UseGuards(AuthGuard('google'))
-	async googleAuthCallback(
-		@Req() req,
-		@Res({ passthrough: true }) res: Response
-	) {
-		const { refreshToken, ...response } =
-			await this.authService.validateOAuthLogin(req)
+    this.authService.addRefreshTokenToResponse(res, refreshToken);
 
-		this.authService.addRefreshTokenToResponse(res, refreshToken)
-
-		return res.redirect(
-			`${process.env['CLIENT_URL']}/dashboard?accessToken=${response.accessToken}`
-		)
-	}
-
-	@Get('yandex')
-	@UseGuards(AuthGuard('yandex'))
-	async yandexAuth(@Req() req) {}
-
-	@Get('yandex/callback')
-	@UseGuards(AuthGuard('yandex'))
-	async yandexAuthCallback(
-		@Req() req,
-		@Res({ passthrough: true }) res: Response
-	) {
-		const { refreshToken, ...response } =
-			await this.authService.validateOAuthLogin(req)
-
-		this.authService.addRefreshTokenToResponse(res, refreshToken)
-
-		return res.redirect(
-			`${process.env['CLIENT_URL']}/dashboard?accessToken=${response.accessToken}`
-		)
-	}
+    return res.redirect(`${process.env["CLIENT_URL"]}/dashboard?accessToken=${response.accessToken}`);
+  }
 }
